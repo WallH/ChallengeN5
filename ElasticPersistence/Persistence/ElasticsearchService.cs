@@ -1,0 +1,91 @@
+﻿using Domain.Entities;
+using Elastic.Clients.Elasticsearch;
+using ElasticPersistence.Abstract;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ElasticPersistence.Persistence
+{
+    public class ElasticsearchService : IElasticsearchService
+    {
+        private readonly ElasticsearchClient _elasticsearchClient;
+        
+        public ElasticsearchService(ElasticsearchClient elasticSearchClient)
+        {
+            _elasticsearchClient = elasticSearchClient;
+        }
+
+        public Task CheckIndex(string index)
+        {
+            //return _elasticsearchClient.Indices.Create(new Elastic.Clients.Elasticsearch.IndexManagement.CreateIndexRequest { })
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteDocumentById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Permission> GetDocument(int id)
+        {
+            try
+            {
+                var response = await _elasticsearchClient.GetAsync<Permission>(id);
+                if (response.IsSuccess())
+                {
+                    return response.Source;
+                }
+                return null;
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<Permission>> GetDocuments()
+        {
+            try
+            {
+                var response = await _elasticsearchClient.SearchAsync<Permission>();
+                if (response.IsSuccess())
+                {
+                    return response.Documents;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public void InsertDocument(string index, Permission document)
+        {
+            _elasticsearchClient.Create(document, "my-index-000001", "3232");
+            //var response = _elasticsearchClient.Index()
+        }
+
+        public void InsertDocument(Permission document, string id)
+        {
+            _elasticsearchClient.Index(document, "my-index-000001", cfg => cfg.Id(id));
+        }
+
+        public void InsertDocuments(IEnumerable<Permission> document, string id)
+        {
+            _elasticsearchClient.Index(document, "my-index-000001", cfg => cfg.Id(id));
+        }
+        public Task InsertDocument(string index, object document)
+        {
+            throw new NotImplementedException();
+        }
+
+        /*Guid IElasticsearchService.InsertDocument(Permission document)
+        {
+            throw new NotImplementedException();
+        }*/
+    }
+}
