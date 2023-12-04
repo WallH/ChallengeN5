@@ -12,16 +12,26 @@ namespace ElasticPersistence.Persistence
     public class ElasticsearchService : IElasticsearchService
     {
         private readonly ElasticsearchClient _elasticsearchClient;
+        private readonly string _index;
         
-        public ElasticsearchService(ElasticsearchClient elasticSearchClient)
+        public ElasticsearchService(ElasticsearchClient elasticSearchClient, string index)
         {
             _elasticsearchClient = elasticSearchClient;
+            _index = index;
         }
 
         public Task CheckIndex(string index)
         {
-            //return _elasticsearchClient.Indices.Create(new Elastic.Clients.Elasticsearch.IndexManagement.CreateIndexRequest { })
-            throw new NotImplementedException();
+            var result = _elasticsearchClient.Indices.Exists(index);
+            if(result.Exists)
+            {
+                return Task.CompletedTask;
+            }
+            else
+            {
+                _elasticsearchClient.Indices.Create(_index);
+                return Task.CompletedTask;
+            }
         }
 
         public Task DeleteDocumentById(int id)
@@ -63,29 +73,19 @@ namespace ElasticPersistence.Persistence
             }
         }
 
-        public void InsertDocument(string index, Permission document)
-        {
-            _elasticsearchClient.Create(document, "my-index-000001", "3232");
-            //var response = _elasticsearchClient.Index()
-        }
-
         public void InsertDocument(Permission document, string id)
         {
-            _elasticsearchClient.Index(document, "my-index-000001", cfg => cfg.Id(id));
+            _elasticsearchClient.Index(document, _index, cfg => cfg.Id(id));
         }
 
         public void InsertDocuments(IEnumerable<Permission> document, string id)
         {
-            _elasticsearchClient.Index(document, "my-index-000001", cfg => cfg.Id(id));
+            var x = _elasticsearchClient.IndexMany(document, _index);
         }
         public Task InsertDocument(string index, object document)
         {
             throw new NotImplementedException();
         }
 
-        /*Guid IElasticsearchService.InsertDocument(Permission document)
-        {
-            throw new NotImplementedException();
-        }*/
     }
 }

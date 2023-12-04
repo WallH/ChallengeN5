@@ -23,7 +23,8 @@ var logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger));
 
-var settingsElastic = new ElasticsearchClientSettings(new Uri("http://localhost:9200"));
+
+var settingsElastic = new ElasticsearchClientSettings(new Uri(builder.Configuration.GetSection("ElasticSearchConfig")["Server"]));
 
 var kafkaConfiguration = new KafkaConfiguration()
 {
@@ -33,7 +34,7 @@ var kafkaConfiguration = new KafkaConfiguration()
 
 settingsElastic.DefaultIndex(kafkaConfiguration.Topic);
 var client = new ElasticsearchClient(settingsElastic);
-builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>(builder => new ElasticsearchService(client));
+builder.Services.AddSingleton<IElasticsearchService, ElasticsearchService>(options => new ElasticsearchService(client, builder.Configuration.GetSection("ElasticSearchConfig")["Index"]));
 
 var config = new ProducerConfig()
 {

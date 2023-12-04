@@ -34,14 +34,17 @@ namespace ApplicationService.Handlers.Commands
         public Task<ModifyPermissionModelResponse> Handle(ModifyPermissionModel request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("HttpPost::Post::ModifyPermission::ModifyPermissionModelResponse begin");
+
+            var permissionTypeExist = _unitOfWork.PermissionTypes.Get(request.PermissionType);
+            
             var permission = _unitOfWork.Permissions.Get(request.Id);
-            if (permission == null)
+            if (permission == null || permissionTypeExist == null)
             {
                 _logger.LogInformation("HttpPost::Post::ModifyPermission::ModifyPermissionModelResponse end");
                 return Task.FromResult(new ModifyPermissionModelResponse
                 {
                     Success = false,
-                    Message = "Permission not found"
+                    Message = "Permission or PermissionType not found"
                 });
             }
             permission.EmployeeForename = request.EmployeeForename;
